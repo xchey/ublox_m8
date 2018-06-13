@@ -1,2 +1,2 @@
 # ublox_m8
-Python3.x code to read and decode ublox M8x binary data.
+Python3.x code to read and decode ublox M8x raw binary data.
