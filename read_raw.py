@@ -93,7 +93,7 @@ class UbloxDesp():
     '''
     Class to describe the structure of ublox message
     '''
-    def __init__(self, data, *args):
+    def __init__(self, data, count, *args):
 
         self._data = data
         self.name = args[0][0]
@@ -109,30 +109,61 @@ class UbloxDesp():
         else:
             self.fields = args[0][2]
 
+        # generate fields member
         for flt, fld in zip(fmt, self.fields):
             self._fields_.append((flt, fld))
 
+        # for multi measurements
         if len(args[0]) > 3:
-            self.count_field = args[0][3]
+            self.count_field = count
             self.format2 = args[0][4]
             self.fields2 = args[0][5]
+
+            fd = []; fmt = []; cnt = 0
+            if len(self.fields2) == 1:
+                while cnt < self.count_field:
+                    fmt.append(self.format2[1:])
+                    fd += self.fields2
+                    cnt += 1
+            else:
+                while cnt < self.count_field:
+                    for i in range(1, len(self.format2)):
+                        fmt.append(self.format2[i])
+
+                    for i in range(0, len(self.fields2)):
+                        fd.append(self.fields2[i]+str(cnt))
+                    cnt += 1
+
+            for flt, fld in zip(fmt, fd):
+                self._fields_.append((flt, fld))
+        else:
+            self.count_field = None
+            self.format2 = None
+            self.fields2 = None
 
     def decode(self):
         '''
         unpack a UbloxMessage with specified fields
         TBD
         '''
-        class DecHed(Structure):
-            _fields_ = self._fields_
-        phead = DecHed.from_buff(self._data)
-        return self.name, phead
+        if self.count_field is None:
+            class DecHed(Structure):
+                _fields_ = self._fields_
+            phead = DecHed.from_buff(self._data)
+            return self.name, phead
+        else:
+            class DecHed2(Structure):
+                _fields_ = self._fields_
+            phead = DecHed2.from_buff(self._data)
+            return self.name, phead
+
 
 
 # message types
 dmsg_type = {
     (CLS_RXM, MSG_RAWX) :   ('RXM_RAWX',
-                             '<dHbBbb',
-                             ['rcvTow', 'week', 'leapS', 'numMeas', 'recStat', 'resv1'],
+                             '<dHbBbbbb',
+                             ['rcvTow', 'week', 'leapS', 'numMeas', 'recStat', 'resv11', 'resv12', 'resv13'],
                              'numMeas',
                              '<ddfBBBBHBbbbbB',
                              ['prMes', 'cpMes', 'doMes', 'gnssId', 'svId', 'resv2', 'freqId',
@@ -229,16 +260,25 @@ class Ublox:
             if self.check_sum(data):
                 print('Check sum passed!')
 
-                ## decode binary data
-                # dec = UbloxDesp(data[5:-2], dmsg_type[(cls_id, msg_id)])
-                # name, fld = dec.decode()
-                #
-                # if msg_id == MSG_TIMEGPS:
-                #     print(name, fld.iTOW, fld.fTOW, fld.week, fld.leapS, bin(fld.valid), fld.tAcc)
-                # elif msg_id == MSG_VELECEF:
-                #     print(name, fld.iTOW, fld.ecefVX, fld.ecefVY, fld.ecefVZ, fld.sAcc)
-                # elif msg_id == MSG_POSECEF:
-                #     print(name, fld.iTOW, fld.ecefX, fld.ecefY, fld.ecefZ, fld.pAcc)
+                # decode binary data
+                cnt = 0
+                if msg_id == MSG_RAWX:
+                    cnt, = unpack('<B', data[16:17])
+                elif msg_id == MSG_SFRBX:
+                    cnt, = unpack('<B', data[9:10])
+                dec = UbloxDesp(data[5:-2], cnt, dmsg_type[(cls_id, msg_id)])
+                name, fld = dec.decode()
+
+                if msg_id == MSG_TIMEGPS:
+                    print(name, fld.iTOW, fld.fTOW, fld.week, fld.leapS, bin(fld.valid), fld.tAcc)
+                elif msg_id == MSG_VELECEF:
+                    print(name, fld.iTOW, fld.ecefVX, fld.ecefVY, fld.ecefVZ, fld.sAcc)
+                elif msg_id == MSG_POSECEF:
+                    print(name, fld.iTOW, fld.ecefX, fld.ecefY, fld.ecefZ, fld.pAcc)
+                elif msg_id == MSG_RAWX:
+                    print(name, fld.leapS, fld.numMeas, fld.recStat)
+                elif msg_id == MSG_SFRBX:
+                    print(name, fld.gnssId, fld.svId, fld.numWords)
                 # dec.show()
                 # dec.from_buff(data)
 
@@ -266,7 +306,7 @@ class Ublox:
             return False
 
 if __name__ == '__main__':
-    dev = Ublox('com12', 115200)
+    dev = Ublox('com23', 115200)
     while True:
         dev.decode_raw()
     # ser = serial.Serial('com12', 115200)
