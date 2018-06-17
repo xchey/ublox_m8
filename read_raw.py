@@ -120,19 +120,11 @@ class UbloxDesp():
             self.fields2 = args[0][5]
 
             fd = []; fmt = []; cnt = 0
-            if len(self.fields2) == 1:
-                while cnt < self.count_field:
-                    fmt.append(self.format2[1:])
-                    fd += self.fields2
-                    cnt += 1
-            else:
-                while cnt < self.count_field:
-                    for i in range(1, len(self.format2)):
-                        fmt.append(self.format2[i])
-
-                    for i in range(0, len(self.fields2)):
-                        fd.append(self.fields2[i]+str(cnt))
-                    cnt += 1
+            while cnt < self.count_field:
+                for i in range(1, len(self.format2)):
+                    fmt.append(self.format2[i])
+                    fd.append(self.fields2[i-1]+str(cnt))
+                cnt += 1
 
             for flt, fld in zip(fmt, fd):
                 self._fields_.append((flt, fld))
@@ -146,16 +138,11 @@ class UbloxDesp():
         unpack a UbloxMessage with specified fields
         TBD
         '''
-        if self.count_field is None:
-            class DecHed(Structure):
-                _fields_ = self._fields_
-            phead = DecHed.from_buff(self._data)
-            return self.name, phead
-        else:
-            class DecHed2(Structure):
-                _fields_ = self._fields_
-            phead = DecHed2.from_buff(self._data)
-            return self.name, phead
+        class DecHed(Structure):
+            _fields_ = self._fields_
+        phead = DecHed.from_buff(self._data)
+        return self.name, phead
+
 
 
 
@@ -217,9 +204,7 @@ class Ublox:
         '''
         read n bytes from serial port
         '''
-        raw_data = b''
-        data = b''
-
+        raw_data = b''; data = b''
         try:
             chunks = iter(lambda : self.ser.read(), b'\xb5')
             for chk in chunks:
@@ -227,7 +212,6 @@ class Ublox:
         except serial.SerialException as e:
             sys.stderr.write('Could not read from serial port {}:{}\n'.format(self.port, e))
 
-        # print(raw_data)
         raw_len = len(raw_data)
 
         if raw_data == b'' :
@@ -238,12 +222,7 @@ class Ublox:
             # (sync char 2, class, id, length, ck_a, ck_b) = 7
             # rxm_rawx still need (msg_len - raw_len + 7)
             msg_len, = unpack('<H', raw_data[3:5])
-            if msg_len == raw_len-7:
-                data = raw_data
-            else:
-                data = raw_data + b'\xb5' + self.ser.read(msg_len-raw_len+7)
-                # print(data, '\n', 'final length: ', len(data) - 7, ',msg len: ', msg_len, ',read msg len: ',
-                #       msg_len-raw_len+7, ',current msg len: ', raw_len-5)
+            data = raw_data if (msg_len == raw_len-7) else (raw_data + b'\xb5' + self.ser.read(msg_len-raw_len+6))
         else:
             print(raw_data[0], ' Something wrong with serial read')
         return data
@@ -279,16 +258,13 @@ class Ublox:
                     print(name, fld.leapS, fld.numMeas, fld.recStat)
                 elif msg_id == MSG_SFRBX:
                     print(name, fld.gnssId, fld.svId, fld.numWords)
-                # dec.show()
-                # dec.from_buff(data)
-
-
             else:
                 print('Check sum failure!')
                 return False
         else:
-            # print('Null ublox raw data')
             return False
+
+    # def
 
     def check_sum(self, dat):
         '''
