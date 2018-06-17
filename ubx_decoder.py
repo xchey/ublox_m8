@@ -4,7 +4,7 @@
 # @Time     : 6/12/2018, 9:31 PM
 # @Author   : Chey
 # @Email    : cheyu856@gmail.com
-# @File     : read_raw.py
+# @File     : ubx_decoder.py
 # @Software : PyCharm
 """
 import sys
