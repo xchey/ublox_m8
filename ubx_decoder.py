@@ -9,6 +9,7 @@
 """
 import sys
 import serial
+import datetime
 from struct import unpack, unpack_from, calcsize
 
 
@@ -21,13 +22,22 @@ CLS_NAV = 0x01
 CLS_RXM = 0x02
 CLS_CFG = 0x06
 
-
 # ublox messag ID
 MSG_RAWX    = 0x15
 MSG_SFRBX   = 0x13
 MSG_POSECEF = 0x01
 MSG_VELECEF = 0x11
 MSG_TIMEGPS = 0x20
+
+# GPS epoch
+GPSTIME = datetime.datetime(1980, 1, 6)
+
+def gpstime_to_epoch(wn, sow):
+    '''
+    Converts from full cycle GPS time (week and seconds) to date and time
+    '''
+    epoch = GPSTIME + datetime.timedelta(weeks=wn, seconds=sow)
+    return epoch
 
 class UbxStructField:
     '''
@@ -61,7 +71,7 @@ class UbxStructureMeta(type):
             offset += calcsize(format)
         setattr(self, 'struct_size', offset)
 
-#
+
 class Structure(metaclass=UbxStructureMeta):
     '''
     Structure to read and decode ublox data
@@ -143,9 +153,6 @@ class UbloxDesp():
         phead = DecHed.from_buff(self._data)
         return self.name, phead
 
-
-
-
 # message types
 dmsg_type = {
     (CLS_RXM, MSG_RAWX) :   ('RXM_RAWX',
@@ -176,6 +183,14 @@ dmsg_type = {
                              '<LlhbBL',
                              ['iTOW', 'fTOW', 'week', 'leapS', 'valid', 'tAcc'])
 }
+
+map_gnssid = {
+    0 : 'G', 1 : 'S',
+    2 : 'E', 3 : 'C',
+    4 : 'I', 5 : 'Q',
+    6 : 'R'
+}
+
 
 class Ublox:
     '''
@@ -213,8 +228,7 @@ class Ublox:
             sys.stderr.write('Could not read from serial port {}:{}\n'.format(self.port, e))
 
         raw_len = len(raw_data)
-
-        if raw_data == b'' :
+        if raw_data == b'':
             data = b''
         elif raw_data[0] == PREAMBLE2:
             # raw data field without sync char 1, add b'\xb5'
@@ -224,7 +238,7 @@ class Ublox:
             msg_len, = unpack('<H', raw_data[3:5])
             data = raw_data if (msg_len == raw_len-7) else (raw_data + b'\xb5' + self.ser.read(msg_len-raw_len+6))
         else:
-            print(raw_data[0], ' Something wrong with serial read')
+            sys.stderr.write('Head{}, Something wrong with serial read\n'.format(raw_data[0]))
         return data
 
     def decode_raw(self):
@@ -237,8 +251,6 @@ class Ublox:
 
             print(cls_id, msg_id, dlen)
             if self.check_sum(data):
-                print('Check sum passed!')
-
                 # decode binary data
                 cnt = 0
                 if msg_id == MSG_RAWX:
@@ -246,25 +258,55 @@ class Ublox:
                 elif msg_id == MSG_SFRBX:
                     cnt, = unpack('<B', data[9:10])
                 dec = UbloxDesp(data[5:-2], cnt, dmsg_type[(cls_id, msg_id)])
-                name, fld = dec.decode()
-
-                if msg_id == MSG_TIMEGPS:
-                    print(name, fld.iTOW, fld.fTOW, fld.week, fld.leapS, bin(fld.valid), fld.tAcc)
-                elif msg_id == MSG_VELECEF:
-                    print(name, fld.iTOW, fld.ecefVX, fld.ecefVY, fld.ecefVZ, fld.sAcc)
-                elif msg_id == MSG_POSECEF:
-                    print(name, fld.iTOW, fld.ecefX, fld.ecefY, fld.ecefZ, fld.pAcc)
-                elif msg_id == MSG_RAWX:
-                    print(name, fld.leapS, fld.numMeas, fld.recStat)
-                elif msg_id == MSG_SFRBX:
-                    print(name, fld.gnssId, fld.svId, fld.numWords)
+                self.show_obs(dec.decode())
             else:
-                print('Check sum failure!')
-                return False
+                sys.stderr.write('Check sum failure!\n')
+                return None
         else:
-            return False
+            return None
 
-    # def
+    def show_obs(self, func):
+        '''
+        Show ublox observations data
+        '''
+
+        name, fld = func
+        if name == MSG_TIMEGPS:
+            if fld.valid & 0x3:
+                week = fld.week
+                sow = fld.iTOW*1e-3 + fld.fTOW*1e-9
+                epoch = gpstime_to_epoch(week, sow)
+                print(epoch.strftime("Current GPS Time: %Y %m %d %H %M %S.%f\n").
+                      replace(' 0', ' '))
+            else:
+                print('Current Epoch not valid!')
+        elif name == 'NAV_POSECEF':
+            print('Current Position ECEF(m): Px:{}, Py:{}, Pz:{}, pAcc:{}\n'.format(
+                fld.ecefX*1e-2, fld.ecefY*1e-2, fld.ecefZ*1e-2, fld.pAcc*1e-2))
+        elif name == 'NAV_VELECEF':
+            print('Current Velocity ECEF(m/s): Vx:{}, Vy:{}, Vz:{}, sAcc:{}\n'.format(
+                fld.ecefVX*1e-2, fld.ecefVY*1e-2, fld.ecefVZ*1e-2, fld.sAcc*1e-2))
+        elif name == 'RXM_RAWX':
+            epoch = gpstime_to_epoch(fld.week, fld.rcvTow)
+            print(epoch.strftime("Current Epoch Time: %Y %m %d %H %M %S.%f\n").
+                  replace(' 0', ' '))
+            for i in range(0, fld.numMeas):
+                print(
+                    'GNSS ID: {}, SV ID: {}\n'
+                    'PrMes: {}, cpMes: {}, doMes: {}, CN0: {}, locktime: {}, trackStat: {}\n'.
+                    format(fld.__getattribute__('gnssId'+str(i)),
+                           fld.__getattribute__('svId' + str(i)),
+                           fld.__getattribute__('prMes' + str(i)),
+                           fld.__getattribute__('cpMes' + str(i)),
+                           fld.__getattribute__('doMes' + str(i)),
+                           fld.__getattribute__('cno' + str(i)),
+                           fld.__getattribute__('locktime' + str(i)),
+                           hex(fld.__getattribute__('trkStat' + str(i)))))
+        elif name == 'RXM_SFRBX':
+            print('GNSS ID: {}, SV ID: {}\n'.format(fld.gnssId, fld.svId))
+            for i in range(8, 8+fld.numWords):
+                print('dwrd{}: {}'.format(i-8, fld.__getattribute__('dwrd'+str(i-8))))
+
 
     def check_sum(self, dat):
         '''
@@ -285,15 +327,3 @@ if __name__ == '__main__':
     dev = Ublox('com23', 115200)
     while True:
         dev.decode_raw()
-    # ser = serial.Serial('com12', 115200)
-    # ser.close()
-    # ser.open()
-    # while True:
-    #     chunks = iter(lambda : ser.read(2), pack('<BB', PREAMBLE1, PREAMBLE2))
-    #     b = b''
-    #     for chk in chunks:
-    #         b += chk
-    #     print(b)
-    #     b = b''
-
-
