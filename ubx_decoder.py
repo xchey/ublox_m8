@@ -387,6 +387,3 @@ if __name__ == '__main__':
             dev.decode_raw()
     finally:
         pass
-    dev = Ublox('com23', 115200)
-    while True:
-        dev.decode_raw()
