@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="763ae0fa-1b49-4ca3-b275-997d4c6a6927" name="Default" comment="" />
+    <list default="true" id="763ae0fa-1b49-4ca3-b275-997d4c6a6927" name="Default" comment="">
+      <change beforePath="" afterPath="$PROJECT_DIR$/ubx_decoder.py" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/ReadRaw.py" afterPath="" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -11,23 +15,21 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="ReadRaw.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/ReadRaw.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1152">
-              <caret line="123" column="16" lean-forward="true" selection-start-line="123" selection-start-column="16" selection-end-line="123" selection-end-column="16" />
-              <folding>
-                <element signature="e#180#190#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/README.md">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="44">
               <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ubx_decoder.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="446">
+              <caret line="391" column="24" lean-forward="false" selection-start-line="391" selection-start-column="24" selection-end-line="391" selection-end-column="24" />
               <folding />
             </state>
           </provider>
@@ -49,14 +51,15 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/ubx_decoder.py" />
         <option value="$PROJECT_DIR$/read_raw.py" />
         <option value="$PROJECT_DIR$/ReadRaw.py" />
+        <option value="$PROJECT_DIR$/ubx_decoder.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="1">
-    <option name="x" value="267" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="231" />
+    <option name="y" value="49" />
     <option name="width" value="1668" />
     <option name="height" value="1037" />
   </component>
@@ -142,7 +145,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="ublox_m8" />
-      <option name="SCRIPT_NAME" value="C:\Users\Chey\Documents\GitHub\ublox_m8\ReadRaw.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\Chey\Documents\GitHub\ublox_m8\ubx_decoder.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -160,7 +163,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="ublox_m8" />
-      <option name="SCRIPT_NAME" value="C:\Users\Chey\Documents\GitHub\ublox_m8\ReadRaw.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\Chey\Documents\GitHub\ublox_m8\ubx_decoder.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -237,7 +240,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="267" y="0" width="1668" height="1037" extended-state="1" />
+    <frame x="231" y="49" width="1668" height="1037" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.11472393" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -419,12 +422,12 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -437,12 +440,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -455,12 +458,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -473,12 +476,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -491,59 +494,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Miniconda3/Lib/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5236">
-          <caret line="308" column="0" lean-forward="false" selection-start-line="308" selection-start-column="0" selection-end-line="308" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -555,12 +541,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -572,61 +558,70 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$USER_HOME$/Miniconda3/Lib/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5236">
+          <caret line="308" column="0" lean-forward="false" selection-start-line="308" selection-start-column="0" selection-end-line="308" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ReadRaw.py">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#180#190#0" expanded="true" />
+            <element signature="e#183#193#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="44">
-          <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#183#193#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -648,11 +643,25 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ReadRaw.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1152">
-          <caret line="123" column="16" lean-forward="true" selection-start-line="123" selection-start-column="16" selection-end-line="123" selection-end-column="16" />
-          <folding>
-            <element signature="e#180#190#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ubx_decoder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="446">
+          <caret line="391" column="24" lean-forward="false" selection-start-line="391" selection-start-column="24" selection-end-line="391" selection-end-column="24" />
+          <folding />
         </state>
       </provider>
     </entry>

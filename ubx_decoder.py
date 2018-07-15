@@ -4,7 +4,7 @@
 # @Time     : 6/12/2018, 9:31 PM
 # @Author   : Chey
 # @Email    : cheyu856@gmail.com
-# @File     : read_raw.py
+# @File     : ubx_decoder.py
 # @Software : PyCharm
 """
 import sys
@@ -387,3 +387,6 @@ if __name__ == '__main__':
             dev.decode_raw()
     finally:
         pass
+    dev = Ublox('com23', 115200)
+    while True:
+        dev.decode_raw()
