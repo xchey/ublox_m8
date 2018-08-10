@@ -8,17 +8,19 @@
 # @Software : PyCharm
 """
 import sys
-from struct import unpack
+import math
+import rtklib as rtk
 from datetime import datetime, timedelta
 
-
+eph_dict = {}
 # origin of the GPS time scale
 GPSTIME = datetime(1980, 1, 6)
+
+GPS_BDS_TBIAS   = 14
 
 first_epoch_obs = None
 rinex_batch_obs = None
 first_epoch_eph = None
-rinex_batch_eph = None
 
 map_gnssid = {
     0 : 'G',    1 : 'S',
@@ -62,13 +64,13 @@ def rinex3_nav_header(runby):
     Rinex3 navigation header
     """
     VERSION = 3.02
-    TYPE = 'OBSERVATION DATA'
+    TYPE = 'NAVIGATION DATA'
     SATSYS = 'M: Mixed'
     # Version line
     h = "{0:9.2f}           {1:<20}{2:<20}RINEX VERSION / TYPE\n".format(VERSION, TYPE, SATSYS)
 
     # Pgm line
-    PGM = 'ANDROID_RINEX'
+    PGM = 'GNSS Rinex'
     datestr = datetime.now().strftime("%Y%m%d %H%M%S")
 
     runby = check_rinex_field('RUNBY', runby, 20)
@@ -80,11 +82,10 @@ def rinex3_nav_header(runby):
     h += "{0:<60}COMMENT\n".format("For doubts or inquiries, just put up your issues")
     h += "{0:<60}COMMENT\n".format("*******************************************************")
     h += "{0:<60}END OF HEADER\n".format(" ")
-
     return h
 
 def rinex3_header(runby=None, marker=None, observer=None, agency=None, receiver=None, rxtype=None,
-                  version='Android OS >7.0', antenna=None, anttype='internal', approx_position=[0, 0, 0],
+                  version='0.1', antenna=None, anttype='internal', approx_position=[0, 0, 0],
                   antenna_hen=[0.0, 0.0, 0.0]):
     """
     Rinex3 observation header
@@ -144,7 +145,6 @@ def rinex3_header(runby=None, marker=None, observer=None, agency=None, receiver=
     h += "R    4 C1C L1C D1C S1C                                      SYS / # / OBS TYPES\n"
     h += "E    4 C1B L1B D1B S1B                                      SYS / # / OBS TYPES\n"
     h += "C    4 C1I L1I D1I S1I                                      SYS / # / OBS TYPES\n"
-    h += "J    4 C1C L1C D1C S1C                                      SYS / # / OBS TYPES\n"
     return h
 
 
@@ -157,31 +157,63 @@ def end_header(first_epoch):
 
     return h
 
+def generate_ephemeris_block(ephem):
+    '''
+    Generate a RINEX Navigation Message ephemeris data block
+    '''
+    output = "%1s%2d %2d %2d %2d %2d %2d %2d%19.12E%19.12E%19.12E\n" % (ephem.gnss, ephem.svid,
+            ephem.toe[0], ephem.toe[1],ephem.toe[2],ephem.toe[3],ephem.toe[4], int(ephem.toe[5]), ephem.af0, ephem.af1, ephem.af2)
+    output += "    %19.12E%19.12E%19.12E%19.12E\n" % (ephem.iode, ephem.crs, ephem.deltaN, ephem.M0)
+    output += "    %19.12E%19.12E%19.12E%19.12E\n" % (ephem.cuc, ephem.ecc, ephem.cus, math.sqrt(ephem.A))
+    output += "    %19.12E%19.12E%19.12E%19.12E\n" % (ephem.tof, ephem.cic, ephem.omega0, ephem.cis)
+    output += "    %19.12E%19.12E%19.12E%19.12E\n" % (ephem.i0, ephem.crc, ephem.omega, ephem.omega_dot)
+    output += "    %19.12E%19.12E%19.12E%19.12E\n" % (ephem.idot, ephem.code_on_l2, ephem.week_no, ephem.l2_p_flag)
+    output += "    %19.12E%19.12E%19.12E%19.12E\n" % (ephem.sv_ura, ephem.sv_health, ephem.Tgd, ephem.iodc)
+    output += "    %19.12E%19.12E\n" % (ephem.ttr, ephem.fit)
+
+    return output
+
+def generate_gephemeris_block(ephem):
+    output = "%1s%2d %2d %2d %2d %2d %2d%5.1f%19.12E%19.12E%19.12E\n" % (ephem.gnss, ephem.svid,
+            ephem.toe[0],ephem.toe[1],ephem.toe[2],ephem.toe[3],ephem.toe[4], ephem.toe[5], ephem.taun, ephem.gamn, ephem.tof)
+    output += "   %19.12E%19.12E%19.12E%19.12E\n" % (ephem.posx, ephem.velx, ephem.accx, ephem.svh)
+    output += "   %19.12E%19.12E%19.12E%19.12E\n" % (ephem.posy, ephem.vely, ephem.accy, ephem.frq)
+    output += "   %19.12E%19.12E%19.12E%19.12E\n" % (ephem.posz, ephem.velz, ephem.accz, ephem.age)
+
+    return output
+
+class Eph:
+    '''
+    ephemeris class
+    '''
+    gnss = ''
+    svid = 0; af0 = 0; af1 = 0; af2 = 0
+    iode = 0; crs = 0; deltaN = 0; M0 = 0
+    cuc  = 0; ecc = 0; cus = 0; A = 0
+    toe  = [0, 0, 0, 0, 0, 0]; cic = 0; omega0 = 0; cis = 0
+    i0   = 0; crc = 0; omega = 0; omega_dot = 0
+    idot = 0; code_on_l2 = 0; week_no = 0; l2_p_flag = 0
+    sv_ura = 0; sv_health = 0; Tgd = 0; iodc = 0
+    ttr = 0; fit = 0
+
+    frq = 0; sva = 0; svh = 0; age = 0
+    tof = 0; posx = 0; posy = 0; posz = 0
+    velx = 0; vely = 0; velz = 0
+    accx = 0; accy = 0; accz = 0
+    taun = 0; gamn = 0; dtaun = 0
+
 class RinexBatch:
     """
     Class that stores a Batch of measurements corresponding to the same epoch
     """
-
     def __init__(self, epoch):
         """
         Sets (or resets) the class
         """
-
         self.__clear()
-
         self.epoch = epoch
 
     def add(self, gnssid, svid, c1, s1, l1, d1, lli):
-        """
-        Add measurement to a batch
-
-        - C/A needs to be specified in meters
-        - SNR must be specified as dB-Hz
-        - L1 phase, if provided, needs to be specified in cycles
-        - D1 doppler, expressed in Hz and positive if satellite is approaching,
-          which is opposite of Android API.
-        """
-
         self.gnssid.append(gnssid)
         self.svids.append(svid)
         self.c1.append(c1)
@@ -190,21 +222,8 @@ class RinexBatch:
         self.d1.append(d1)
         self.lli.append(lli)
 
-        return
 
     def print(self):
-        """
-        Prints batch.
-
-        It generates a string with the batch as a RINEX epoch.
-
-        After printing the data, the method clears the data
-
-        There have been some cases where the epoch in the smartphones are
-        repeated, therefore, this routine checks if there are repeated entries.
-        In this case it skips all the epoch altogether.
-        """
-
         # Check for repeated emtries. In this case skip
         for sat in self.svids:
             if self.svids.count(sat) > 1:
@@ -225,19 +244,7 @@ class RinexBatch:
 
         return b + "\n" + data
 
-    def print3(self):
-        """
-        Prints batch.
-
-        It generates a string with the batch as a RINEX epoch.
-
-        After printing the data, the method clears the data
-
-        There have been some cases where the epoch in the smartphones are
-        repeated, therefore, this routine checks if there are repeated entries.
-        In this case it skips all the epoch altogether.
-        """
-
+    def print3_obs(self):
         # Check for repeated emtries. In this case skip
         if len(self.gnssid) < 2:
             for sat in self.svids:
@@ -256,8 +263,8 @@ class RinexBatch:
             # if i > 0 and i % 12 == 0:
             #     b += "\n{0:32}".format(" ")
             # b += self.svids[i]
-            data += "{0:1}{1:2}{2:14.3f}{3:14.3f}{4:1}{5:14.3f}{6:14.3f}\n".format(self.gnssid[i],
-                                                                self.svids[i], self.c1[i], self.l1[i],
+            data += "{0:1}{1:2}{2:14.3f}{3:3}{4:14.3f}{5:1}{6:14.3f}{7:14.3f}\n".format(self.gnssid[i],
+                                                                self.svids[i], self.c1[i],' ', self.l1[i],
                                                                 self.lli[i] if self.lli[i] == 1 else ' ',
                                                                 self.d1[i], self.s1[i])
 
@@ -267,27 +274,19 @@ class RinexBatch:
         """
         Clear the data stored in the object
         """
-
         self.epoch = None
-
         # List of gnss id of with respect to each satellites
         self.gnssid = []
-
         # List of satellite PRN numbers (identifiers)
         self.svids = []
-
         # List of code ranges
         self.c1 = []
-
         # List of carrier phases
         self.l1 = []
-
         # List of C/N0
         self.s1 = []
-
         # List of C/N0
         self.d1 = []
-
         # List of lli
         self.lli = []
 
@@ -319,12 +318,205 @@ def to_obs(fd, obs):
         rinex_batch_obs.add(map_gnssid[meas.gnssId], meas.svId, meas.prMes, meas.cno, meas.cpMes, meas.doMes, 0)
 
 
-def to_eph(fd, raw):
+def rto_obs(fd, raw):
+    '''
+     ublox raw data to observations
+    '''
+    global first_epoch_obs, rinex_batch_obs
+
+    # robsd = rtk.obsd_t()
+    # get gps time epoch
+    wk = rtk.iArray(1)
+    sec = rtk.time2gpst(raw.time, wk)
+    epoch = gpstime_to_epoch(wk[0], sec)
+
+    # get observation data from array
+    robsd = raw.obs.data
+    for i in range(0, raw.obs.n):
+        try:
+            # Check for first epoch, that will be used to end the header (to
+            # print the compulsory TIME OF FIRST OBS field)
+            if first_epoch_obs is None:
+                fd.write(end_header(epoch))
+                first_epoch_obs = False
+
+            # Check if we need to create a new batch
+            if rinex_batch_obs is None:
+                rinex_batch_obs = RinexBatch(epoch)
+            elif rinex_batch_obs.epoch != epoch:
+                fd.write(rinex_batch_obs.print3_obs())
+                rinex_batch_obs = RinexBatch(epoch)
+
+            data = rtk.getObs(robsd, i)
+            sat_id = data.sat
+            gnssId=''; svId=0; prMes=0; cn0=0; cpMes=0; doMes=0; lli=0; l1=0
+            if sat_id >= rtk.MINGPSPRN and sat_id <= rtk.MAXGPSPRN:
+                gnssId = 'G'
+                svId = sat_id
+                l1 = rtk.getD(data.L, 0)
+            elif sat_id >= rtk.MINGLOPRN and sat_id <= rtk.MAXGLOPRN:
+                gnssId = 'R'
+                svId = sat_id-rtk.MAXGPSPRN
+                wl = rtk.CLIGHT / (rtk.FREQ1_GLO + rtk.DFRQ1_GLO * rtk.slot_freq[svId-1])
+                l1 = rtk.getD(data.L, 0)/wl
+            elif sat_id >= rtk.MINGALPRN and sat_id <= rtk.MAXGALPRN:
+                gnssId = 'E'
+                svId = sat_id-rtk.MAXGLOPRN
+                l1 = rtk.getD(data.L, 0)
+            elif sat_id >= rtk.MINBDSPRN and sat_id <= rtk.MAXBDSPRN:
+                gnssId = 'C'
+                svId = sat_id-rtk.MAXGALPRN
+                l1 = rtk.getD(data.L, 0)
+
+            prMes = rtk.getD(data.P, 0)
+            cn0 = rtk.getUc(data.SNR, 0)/4
+            cpMes = l1
+            doMes = rtk.getF(data.D, 0)
+            lli = rtk.getUc(data.LLI, 0) & 0x03
+            # If we reached this point it means that all went well. Therefore
+            # proceed to store the measurements
+            rinex_batch_obs.add(gnssId, svId, prMes, cn0, cpMes, doMes, lli)
+        except:
+            pass
+    print(f'write {raw.obs.n} observations at {epoch}')
+
+
+def fill_eph(data, eph, glonass=False):
+    week = rtk.iArray(1)
+    if glonass == False:
+        eph.svid = data.sat
+        eph.af0 = data.f0
+        eph.af1 = data.f1
+        eph.af2 = data.f2
+
+        eph.iode = data.iode
+        eph.crs = data.crs
+        eph.deltaN = data.deln
+        eph.M0 = data.M0
+
+        eph.cuc = data.cuc
+        eph.ecc = data.e
+        eph.cus = data.cus
+        eph.A = data.A
+
+        toe = rtk.dArray(6)
+        rtk.time2epoch(data.toc, toe)
+        for i in range(6):
+            try:
+                eph.toe[i] = rtk.getD(toe, i)
+            except:
+                pass
+        eph.cic = data.cic
+        eph.omega0 = data.OMG0
+        eph.cis = data.cis
+
+        eph.i0 = data.i0
+        eph.crc = data.crc
+        eph.omega = data.omg
+        eph.omega_dot = data.OMGd
+
+        eph.idot = data.idot
+        eph.code_on_l2 = data.code
+        eph.week_no = data.week
+        eph.l2_p_flag = data.flag
+
+        eph.sv_ura = data.sva
+        eph.sv_health = data.svh
+        eph.Tgd = rtk.getD(data.tgd, 0)
+        eph.iodc = data.iodc
+
+        eph.ttr = rtk.time2gpst(data.ttr, week)
+        eph.tof = rtk.time2gpst(data.toe, week)
+        eph.fit = data.fit
+
+        eph.toe = list(map(int, eph.toe))
+    else:
+        eph.sat = data.sat
+        eph.iode = data.iode
+        eph.frq = data.frq
+        eph.svh = data.svh
+        eph.sva = data.sva
+        eph.age = data.age
+
+        toe = rtk.dArray(6)
+        rtk.time2epoch(data.toe, toe)
+        for i in range(6):
+            try:
+                eph.toe[i] = rtk.getD(toe, i)
+            except:
+                pass
+        eph.tof = rtk.time2gpst(data.tof, week)
+        eph.posx = rtk.getD(data.pos, 0)
+        eph.posy = rtk.getD(data.pos, 1)
+        eph.posz = rtk.getD(data.pos, 2)
+        eph.velx = rtk.getD(data.vel, 0)
+        eph.vely = rtk.getD(data.vel, 1)
+        eph.velz = rtk.getD(data.vel, 2)
+        eph.accx = rtk.getD(data.acc, 0)
+        eph.accy = rtk.getD(data.acc, 1)
+        eph.accz = rtk.getD(data.acc, 2)
+
+        eph.taun = data.taun
+        eph.gamn = data.gamn
+        eph.dtaun = data.dtaun
+
+
+def rto_eph(fd, raw):
     '''
     ublox raw data to ephemeris
     '''
-    global first_epoch_eph, rinex_batch_eph, eph
-    #TODO: decode ublox ephemeris
+    eph = Eph()
+    # get ephemeris index
+    sat_id = raw.ephsat
+    peph = rtk.getEph(raw.nav.eph, sat_id-1)
+    pgeph = rtk.getGeph(raw.nav.geph, sat_id-rtk.MAXGPSPRN-1)
+    if sat_id >= rtk.MINGLOPRN and sat_id <= rtk.MAXGLOPRN:
+        fill_eph(pgeph, eph, glonass=True)
+        eph.gnss = 'R'
+        eph.svid -= rtk.MAXGPSPRN
+        if eph.svid not in eph_dict:
+            eph_dict.setdefault(eph.svid, []).append(eph.iode)
+        elif eph.svid in eph_dict and eph.iode not in eph_dict[eph.svid]:
+            eph_dict.setdefault(eph.svid, []).append(eph.iode)
+        else:
+            return
+        fd.write(generate_gephemeris_block(eph))
+    else:
+        fill_eph(peph, eph)
+        if sat_id >= rtk.MINGPSPRN and sat_id <= rtk.MAXGPSPRN:
+            eph.toe[-1] = eph.toe[-1]-raw.nav.leaps
+            eph.gnss = 'G'
+        elif sat_id >= rtk.MINGALPRN and sat_id <= rtk.MAXGALPRN:
+            eph.gnss = 'E'
+            eph.svid -= rtk.MAXGLOPRN
+        elif sat_id >= rtk.MINBDSPRN and sat_id <= rtk.MAXBDSPRN:
+            eph.gnss = 'C'
+            eph.toe[-1] = eph.toe[-1]-GPS_BDS_TBIAS
+            eph.svid -= rtk.MAXGALPRN
+        else:
+            pass
+        if eph.svid not in eph_dict:
+            eph_dict.setdefault(eph.svid, []).append(eph.iode)
+        elif eph.svid in eph_dict and eph.iode not in eph_dict[eph.svid]:
+            eph_dict.setdefault(eph.svid, []).append(eph.iode)
+        else:
+            return
+        fd.write(generate_ephemeris_block(eph))
+    print(f'write {eph.gnss}{eph.svid} ephemeris')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
